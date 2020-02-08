@@ -254,7 +254,7 @@ specialStringifier.is=function (s,scope){
   var i,s,t;
   if (s.args[1]=="empty"){
     return "("+char.not+char.exists+v+"("+v+char.in+s.args[0]+"))";
-  }else if (s.args[1].op=="subsetof")){
+  }else if (s.args[1].op=="subsetof"){
     return "("+char.not+char.exists+v+"(("+v+char.in+s.args[0]+char.and+"("+char.not+v+char.in+s.args[1].args[0]+"))))";
   }else if (s.args[1].op=="setBuild"){
     r="";
