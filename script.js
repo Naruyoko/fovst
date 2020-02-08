@@ -155,7 +155,7 @@ specialParser.is=function (tokens){
   if (tokens[0].type!="variable") throw Error ("SyntaxError: Invalid left-hand side in assignment");
   if (tokens[2].type=="keyword"&&tokens[2].value=="empty"){
     return {op:"is",args:[tokens[0].value,"empty"]};
-  }else if (tokens[2].type=="subsetof"){
+  }else if (tokens[2].type=="keyword"&&tokens[2].value=="subsetof"){
     return {op:"is",args:[tokens[0].value,specialParser.subsetof(tokens.slice(3))]};
   }else if (tokens[2].type=="LBrace"){
     return {op:"is",args:[tokens[0].value,specialParser.setBuild(tokens.slice(2))]};
