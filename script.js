@@ -18,7 +18,8 @@ function compile(s){
 var reserved=[
   "is",
   "empty",
-  "exists"
+  "exists",
+  "subsetof"
 ];
 function tokenizeSource(expression){
   var P={};
@@ -154,9 +155,15 @@ specialParser.is=function (tokens){
   if (tokens[0].type!="variable") throw Error ("SyntaxError: Invalid left-hand side in assignment");
   if (tokens[2].type=="keyword"&&tokens[2].value=="empty"){
     return {op:"is",args:[tokens[0].value,"empty"]};
-  }else if (tokens[2].type=="LBrace"){
+  }else if (tokens[2].type=="subsetof"){
+    return {op:"is",args:[tokens[0].value,specialParser.subsetof(tokens.slice(3))]};
+  }else(tokens[2].type=="LBrace"){
     return {op:"is",args:[tokens[0].value,specialParser.setBuild(tokens.slice(2))]};
   }
+};
+specialParser.subsetof=function (tokens){
+  if (tokens[0].type!="variable") throw Error("SyntaxError: Invalid parent set");
+  return {op:"subsetof",args:[tokens[0].value]};
 };
 specialParser.setBuild=function (tokens){
   var temp;
@@ -211,7 +218,7 @@ function getFreeVariable(scope){
     if (!scope.has(v)) return v;
     d[0]++;
     var i=0;
-    while (d[i]<c.length-1){
+    while (d[i]==c.length){
       d[i]=0;
       d[i+1]=(d[i+1]||0)+1;
       i++;
@@ -244,20 +251,24 @@ specialStringifier.multipleStatements=function (s,scope){
 }
 specialStringifier.is=function (s,scope){
   var v=getFreeVariable(scope);
+  var i,s,t;
   if (s.args[1]=="empty"){
     return "("+char.not+char.exists+v+"("+v+char.in+s.args[0]+"))";
+  }else if (s.args[1].op=="subsetof")){
+    return "("+char.not+char.exists+v+"(("+v+char.in+s.args[0]+char.and+"("+char.not+v+char.in+s.args[1].args[0]+"))))";
+  }else if (s.args[1].op=="setBuild"){
+    r="";
+    for (i=0;i<s.args[1].args.length;i++){
+      p=s.args[1].args[i]+char.in+s.args[0];
+      if (r) r="("+r+char.and+p+")";
+      else r=p;
+    }
+    t=v+char.in+s.args[0];
+    for (i=0;i<s.args[1].args.length;i++){
+      p="("+char.not+v+"="+s.args[1].args[i]+")";
+      t="("+t+char.and+p+")";
+    }
+    t="("+char.not+char.exists+v+"("+t+")";
+    return "("+r+char.and+t+")";
   }
-  var r="";
-  for (var i=0;i<s.args[1].args.length;i++){
-    var p=s.args[1].args[i]+char.in+s.args[0];
-    if (r) r="("+r+char.and+p+")";
-    else r=p;
-  }
-  var t=v+char.in+s.args[0];
-  for (i=0;i<s.args[1].args.length;i++){
-    p="("+char.not+v+"="+s.args[1].args[i]+")";
-    t="("+t+char.and+p+")";
-  }
-  t="("+char.not+char.exists+v+"("+t+")";
-  return "("+r+char.and+t+")";
 }
