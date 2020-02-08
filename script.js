@@ -157,7 +157,7 @@ specialParser.is=function (tokens){
     return {op:"is",args:[tokens[0].value,"empty"]};
   }else if (tokens[2].type=="subsetof"){
     return {op:"is",args:[tokens[0].value,specialParser.subsetof(tokens.slice(3))]};
-  }else(tokens[2].type=="LBrace"){
+  }else if (tokens[2].type=="LBrace"){
     return {op:"is",args:[tokens[0].value,specialParser.setBuild(tokens.slice(2))]};
   }
 };
